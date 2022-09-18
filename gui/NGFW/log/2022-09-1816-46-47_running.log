@@ -1,0 +1,3 @@
+2022-09-18 16:46:57.419 | INFO     | __main__:usr_log_in:49 - 123 logged in at 1663490817.4192407
+2022-09-18 16:47:01.396 | INFO     | gui.NGFW.build_main.gui_main:set_init_window:275 - main page start1663490821.3968825
+2022-09-18 16:47:08.306 | INFO     | gui.NGFW.build_main.gui_main:goto_firewall:281 - firewall page start1663490828.3059905
