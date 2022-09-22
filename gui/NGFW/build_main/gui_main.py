@@ -5,15 +5,14 @@ from pathlib import Path
 from tkinter.messagebox import askyesno
 
 from loguru import logger
-# from tkinter import *
-# Explicit imports to satisfy Flake8
+from webbrowser import open as webopen
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Toplevel
 
 from gui.NGFW.build_firewall.gui_firewall import MY_FIREWALL_GUI
 
 
 class MY_GUI():
-    def __init__(self, init_window,log):
+    def __init__(self, init_window, log):
         self.jobtxt = None
         self.init_window = init_window
         self.OUTPUT_PATH = Path(__file__).parent
@@ -263,7 +262,7 @@ class MY_GUI():
             image=self.button_image_11,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_11 clicked"),
+            command=lambda: webopen('http://127.0.0.1:1880/ui/'),
             relief="flat"
         )
         self.button_11.place(
@@ -272,13 +271,13 @@ class MY_GUI():
             width=261.3363952636719,
             height=312.0
         )
-        self.log.info("main page start"+str(time.time()))
+        self.log.info("main page start" + str(time.time()))
 
     def goto_firewall(self):
         firewall_window = Toplevel(self.init_window)
         firewall = MY_FIREWALL_GUI(firewall_window)
         firewall.set_firewall_window()
-        self.log.info("firewall page start"+str(time.time()))
+        self.log.info("firewall page start" + str(time.time()))
         firewall_window.mainloop()
 
     def goto_ips_sl(self):
@@ -298,25 +297,24 @@ class MY_GUI():
     def close_window(self):
         ans = askyesno(title='Warning', message='are you sure to exit?')
         if ans:
-            self.log.info("user exit "+str(time.time()))
+            self.log.info("user exit " + str(time.time()))
             self.init_window.destroy()
         else:
             return
 
 
 class Indus_Rule:
-    def __init__(self, init_window,log):
+    def __init__(self, init_window, log):
         self.init_window = init_window
-        self.gui = MY_GUI(init_window,log)
+        self.gui = MY_GUI(init_window, log)
 
 
 def gui_start(log):
     init_window = Tk()  # 实例化出一个父窗口
-    tool = Indus_Rule(init_window,log)
+    tool = Indus_Rule(init_window, log)
     init_window.resizable(False, False)
     init_window.mainloop()  # 父窗口进入事件循环，可以理解为保持窗口运行，否则界面不展示
 
 
 if __name__ == '__main__':
     gui_start(logger)
-

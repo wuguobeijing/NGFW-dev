@@ -2,10 +2,8 @@
 # https://github.com/ParthJadhav/Tkinter-Designer
 import subprocess
 from pathlib import Path
-
-# from tkinter import *
-# Explicit imports to satisfy Flake8
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, messagebox
+from webbrowser import open as webopen
+from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, messagebox, Frame, Scrollbar, Listbox, BOTH, END
 
 
 class MY_FIREWALL_GUI():
@@ -30,11 +28,50 @@ class MY_FIREWALL_GUI():
 
     def query_iptables_rules_filter(self):
         if self.check_device():
-            rules_content = 'sudo iptables -L'
-            ssh_content = "ssh %s \'%s\'" % (self.selected_device, rules_content)
-            p = subprocess.Popen(ssh_content, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            out, err = p.communicate()
+            rules_content = 'sudo iptables -L -n --line-number'
+            self.ssh_query_ip_tables(rules_content)
+
+    def query_iptables_rules_nat(self):
+        if self.check_device():
+            rules_content = 'sudo iptables -t nat -L -n --line-number'
+            self.ssh_query_ip_tables(rules_content)
+
+    def query_iptables_rules_mangle(self):
+        if self.check_device():
+            rules_content = 'sudo iptables -t mangle -L -n --line-number'
+            self.ssh_query_ip_tables(rules_content)
+
+    def query_iptables_rules_raw(self):
+        if self.check_device():
+            rules_content = 'sudo iptables -t raw -L -n --line-number'
+            self.ssh_query_ip_tables(rules_content)
+
+    def ssh_query_ip_tables(self, rules_content):
+        self.rule_printout.delete(0, 'end')
+        ssh_content = "ssh %s \'%s\'" % (self.selected_device, rules_content)
+        p = subprocess.Popen(ssh_content, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, err = p.communicate()
+        if err is not None:
+            messagebox.showwarning("query failed!", "try again later")
+        else:
+            self.show_select_rules(out.decode().strip())
             print(out)
+
+    def show_select_rules(self, out):
+        rules_list = out.split('Chain')
+        for rules in rules_list:
+            atom_rules = rules.split('\n')
+            for i, atom_rule in enumerate(atom_rules):
+                if "target" in atom_rule or atom_rule == '':
+                    pass
+                elif i == 0:
+                    self.rule_printout.insert(END, atom_rule)
+                else:
+                    rule_to_print = atom_rule.strip(" ").split()
+                    rule_print = rule_to_print[0] + " target:" + rule_to_print[1] + " prot:" + rule_to_print[
+                        2] + " opt:" + rule_to_print[3] + " source:" + rule_to_print[4] + " dst:" + rule_to_print[5]
+                    rule_content = atom_rules[0].split(' ')[1] + ' - ' + rule_print
+                    self.rule_printout.insert(END, rule_content)
 
     def select_device_k(self):
         self.selected_device = "k"
@@ -42,6 +79,7 @@ class MY_FIREWALL_GUI():
     def set_firewall_window(self):
         self.firewall_window.geometry("1317x855")
         self.firewall_window.configure(bg="#282B2D")
+        self.firewall_window.resizable(False, False)
         self.canvas = Canvas(
             self.firewall_window,
             bg="#282B2D",
@@ -281,22 +319,22 @@ class MY_FIREWALL_GUI():
             fill="#958F93",
             outline="")
 
-        self.button_image_12 = PhotoImage(
-            file=self.relative_to_assets("button_12.png"))
-        self.button_12 = Button(
-            self.canvas,
-            image=self.button_image_12,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: print("button_12 clicked"),
-            relief="flat"
-        )
-        self.button_12.place(
-            x=1140.0,
-            y=747.0,
-            width=89.0,
-            height=20.0
-        )
+        # self.button_image_12 = PhotoImage(
+        #     file=self.relative_to_assets("button_12.png"))
+        # self.button_12 = Button(
+        #     self.canvas,
+        #     image=self.button_image_12,
+        #     borderwidth=0,
+        #     highlightthickness=0,
+        #     command=lambda: print("button_12 clicked"),
+        #     relief="flat"
+        # )
+        # self.button_12.place(
+        #     x=1140.0,
+        #     y=747.0,
+        #     width=89.0,
+        #     height=20.0
+        # )
 
         self.button_image_13 = PhotoImage(
             file=self.relative_to_assets("button_13.png"))
@@ -305,7 +343,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_13,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_13 clicked"),
+            command=self.query_iptables_rules_mangle,
             relief="flat"
         )
         self.button_13.place(
@@ -322,7 +360,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_14,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_14 clicked"),
+            command=self.query_iptables_rules_raw,
             relief="flat"
         )
         self.button_14.place(
@@ -356,7 +394,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_16,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_16 clicked"),
+            command=self.query_iptables_rules_nat,
             relief="flat"
         )
         self.button_16.place(
@@ -453,7 +491,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_18,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_18 clicked"),
+            command=lambda: webopen('http://127.0.0.1:1880/ui/'),
             relief="flat"
         )
         self.button_18.place(
@@ -479,6 +517,18 @@ class MY_FIREWALL_GUI():
             width=100.88568115234375,
             height=98.00003051757812
         )
+        self.frame_top = Frame(self.canvas, borderwidth=2)
+        self.frame_top.place(x=537.0,
+                             y=705.0,
+                             width=637.0,
+                             height=106.0)
+        self.rules_select = Frame(self.frame_top)
+        self.rules_select.pack(padx=2, pady=2, ipady=2, ipadx=2, side='top')
+        self.rules_Scroll = Scrollbar(self.rules_select)
+        self.rules_Scroll.pack(side='right', fill='y')
+        self.rule_printout = Listbox(self.rules_select, yscrollcommand=self.rules_Scroll.set, width=200, height=5)
+        self.rule_printout.pack(side='right', fill=BOTH)
+        self.rules_Scroll.config(command=self.rule_printout.yview)
 
         self.canvas.create_text(
             810.0,
@@ -488,5 +538,4 @@ class MY_FIREWALL_GUI():
             fill="#0D0101",
             font=("Roboto Regular", 13 * -1)
         )
-        # self.firewall_window.resizable(False, False)
         # self.firewall_window.mainloop()
