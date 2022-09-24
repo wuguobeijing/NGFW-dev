@@ -76,6 +76,9 @@ class MY_FIREWALL_GUI():
     def select_device_k(self):
         self.selected_device = "k"
 
+    def select_device_localhost(self):
+        self.selected_device = "localhost"
+
     def set_firewall_window(self):
         self.firewall_window.geometry("1317x855")
         self.firewall_window.configure(bg="#282B2D")
@@ -284,7 +287,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_10,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_10 clicked"),
+            command=self.select_device_localhost,
             relief="flat"
         )
         self.button_10.place(
