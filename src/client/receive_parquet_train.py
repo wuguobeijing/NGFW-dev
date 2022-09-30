@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import socket
@@ -107,22 +108,20 @@ def train_auto_gl():
         'scheduler': 'local',
         'searcher': search_strategy,
     }
-    file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/Models/Data/self_data1.csv"
+    file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/Data/self_data1.csv"
     df = pd.read_csv(file_path)
     del df['module_labels']
     train_data = TabularDataset(df)
-    save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/Models/auto_gl' \
+    save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl' \
                 '/edge_model/binary'
     label = 'label'
     predictor = TabularPredictor(label=label, eval_metric='roc_auc', path=save_path)
-    log = open("/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/cloud_model.log", mode="a",
-               encoding="utf-8")
     predictor.fit(train_data, num_bag_folds=5, num_bag_sets=1, num_stack_levels=0,
                   time_limit=time_limit, presets='optimize_for_deployment', hyperparameters=hyperparameters,
                   hyperparameter_tune_kwargs=hyperparameter_tune_kwargs, verbosity=4,
                   ag_args_fit={'num_gpus': 1},
                   )
-    print(predictor.fit_summary(), log)
+    logger.info("binary:\n" + predictor.fit_summary())
 
 
 def train_auto_gl_mul():
@@ -154,22 +153,20 @@ def train_auto_gl_mul():
         'scheduler': 'local',
         'searcher': search_strategy,
     }
-    file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/Models/Data/self_data1.csv"
+    file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/Data/self_data1.csv"
     df = pd.read_csv(file_path)
     del df['label']
     train_data = TabularDataset(df)
-    save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/Models/auto_gl' \
+    save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl' \
                 '/edge_model/multi'
     label = 'module_labels'
     predictor = TabularPredictor(label=label, path=save_path)
-    log = open("/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/cloud_model.log", mode="a",
-               encoding="utf-8")
     predictor.fit(train_data, num_bag_folds=5, num_bag_sets=1, num_stack_levels=0,
                   time_limit=time_limit, presets='optimize_for_deployment', hyperparameters=hyperparameters,
                   hyperparameter_tune_kwargs=hyperparameter_tune_kwargs, verbosity=4,
                   ag_args_fit={'num_gpus': 1},
                   )
-    print(predictor.fit_summary(), log)
+    logger.info("multi:\n" + predictor.fit_summary())
 
 
 # 一次性打包整个根目录。空子目录会被打包。
@@ -238,7 +235,8 @@ def on_send_error(excp):
 
 
 def main():
-    logger.add('cloud_model.log')
+    dt = datetime.datetime.now()
+    logger.add(dt.strftime("%Y-%m-%d%H-%M-%S") + '_cloud_model.log')
     try:
         consumer = KafkaConsumer('parquet-topic', value_deserializer=lambda m: json.loads(m.decode('ascii')),
                                  bootstrap_servers='wuguo-buaa:9092', group_id='edge_group',
@@ -253,21 +251,32 @@ def main():
                 train_auto_gl()
                 train_auto_gl_mul()
                 make_targz('model.tar.gz',
-                           "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/Models"
+                           "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model"
                            "/auto_gl/edge_model")
                 producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
                                          value_serializer=lambda m: json.dumps(m).encode('ascii'))
                 json_content = {"type": 'new_model_k', "time": str(time.time()), "model_host": model_host}
                 producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
+                producer.close()
                 send_model(model_host)
         consumer.close()
     except:
         print("open kafka server first!")
 
 
+def send_slips_order():
+    producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
+                             value_serializer=lambda m: json.dumps(m).encode('ascii'))
+    order_param = {"filepath": '', "interface": 'eth0', "order": 'start', "blocking": False}
+    json_content = {"type": 'new_slips_order', "time": str(time.time()), "model_host": 'k', "order_param": order_param}
+    producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
+    producer.close()
+
+
 if __name__ == '__main__':
     # while True:
-    main()
+    # main()
+    send_slips_order()
     # producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',value_serializer=lambda m: json.dumps(m).encode('ascii'))
     # json_content = {"type": 'new_model_k', "time": str(time.time()), "model_host": 'k'}
     # producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)

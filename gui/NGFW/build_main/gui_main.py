@@ -9,6 +9,7 @@ from webbrowser import open as webopen
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Toplevel
 
 from gui.NGFW.build_firewall.gui_firewall import MY_FIREWALL_GUI
+from gui.NGFW.build_flow.gui_flow import MY_FLOW_GUI
 
 
 class MY_GUI():
@@ -116,7 +117,7 @@ class MY_GUI():
             image=self.button_image_5,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_5 clicked"),
+            command=self.goto_ips_flow,
             relief="flat"
         )
         self.button_5.place(
@@ -280,14 +281,15 @@ class MY_GUI():
         self.log.info("firewall page start" + str(time.time()))
         firewall_window.mainloop()
 
-    def goto_ips_sl(self):
+    def goto_ips_flow(self):
         # supervised learning
-        firewall_window = Toplevel(self.init_window)
-        firewall = MY_FIREWALL_GUI(firewall_window)
-        firewall.set_firewall_window()
-        firewall_window.mainloop()
+        flow_window = Toplevel(self.init_window)
+        flow_win = MY_FLOW_GUI(flow_window)
+        flow_win.set_flow_window()
+        self.log.info("flow page start" + str(time.time()))
+        flow_window.mainloop()
 
-    def goto_ips_ul(self):
+    def goto_ips_data(self):
         # unsupervised learning
         firewall_window = Toplevel(self.init_window)
         firewall = MY_FIREWALL_GUI(firewall_window)
