@@ -79,7 +79,7 @@ def read_pyarrow(path):
     return pq.read_table(path).to_pandas()
 
 
-def train_auto_gl():
+def train_auto_gl(upload_file_path=None, save_model_path=None):
     gbm_options = {  # specifies non-default hyperparameter values for lightGBM gradient boosted trees
         'num_boost_round': 100,  # number of boosting rounds (controls training time of GBM models)
         'num_leaves': ag.space.Int(lower=26, upper=66, default=36),
@@ -90,13 +90,7 @@ def train_auto_gl():
     }
     XT_options = {}
     hyperparameters = {  # hyperparameters of each model type
-        # 'XGB': XGB_option_best
-        # 'RF':RF_option,
-        # 'XT' : XT_options,
-        'GBM': gbm_options,
-        #  'CAT' : CAT_option_best,
-        # 'NN_TORCH': nn_options,  # NOTE: comment this line out if you get errors on Mac OSX
-
+        'GBM': gbm_options
     }  # When these keys are missing from hyperparameters dict, no models of that type are trained
 
     time_limit = 2 * 60  # train various models for ~2 min
@@ -109,11 +103,15 @@ def train_auto_gl():
         'searcher': search_strategy,
     }
     file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/Data/self_data1.csv"
+    if upload_file_path is not None:
+        file_path = upload_file_path
     df = pd.read_csv(file_path)
     del df['module_labels']
     train_data = TabularDataset(df)
     save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl' \
                 '/edge_model/binary'
+    if save_model_path is not None:
+        save_path = save_model_path
     label = 'label'
     predictor = TabularPredictor(label=label, eval_metric='roc_auc', path=save_path)
     predictor.fit(train_data, num_bag_folds=5, num_bag_sets=1, num_stack_levels=0,
@@ -121,10 +119,10 @@ def train_auto_gl():
                   hyperparameter_tune_kwargs=hyperparameter_tune_kwargs, verbosity=4,
                   ag_args_fit={'num_gpus': 1},
                   )
-    logger.info("binary:\n" + predictor.fit_summary())
+    logger.info("binary:\n" + str(predictor.fit_summary()))
 
 
-def train_auto_gl_mul():
+def train_auto_gl_mul(upload_file_path=None, save_model_path=None):
     gbm_options = {  # specifies non-default hyperparameter values for lightGBM gradient boosted trees
         'num_boost_round': 100,  # number of boosting rounds (controls training time of GBM models)
         'num_leaves': ag.space.Int(lower=26, upper=66, default=36),
@@ -134,14 +132,8 @@ def train_auto_gl_mul():
         'min_data_in_leaf': ag.space.Int(lower=2, upper=60, default=20)
     }
     XT_options = {}
-    hyperparameters = {  # hyperparameters of each model type
-        # 'XGB': XGB_option_best
-        # 'RF':RF_option,
-        # 'XT' : XT_options,
-        'GBM': gbm_options,
-        #  'CAT' : CAT_option_best,
-        # 'NN_TORCH': nn_options,  # NOTE: comment this line out if you get errors on Mac OSX
-
+    hyperparameters = {
+        'GBM': gbm_options
     }  # When these keys are missing from hyperparameters dict, no models of that type are trained
 
     time_limit = 2 * 60  # train various models for ~2 min
@@ -154,11 +146,15 @@ def train_auto_gl_mul():
         'searcher': search_strategy,
     }
     file_path = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/Data/self_data1.csv"
+    if upload_file_path is not None:
+        file_path = upload_file_path
     df = pd.read_csv(file_path)
     del df['label']
     train_data = TabularDataset(df)
     save_path = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl' \
                 '/edge_model/multi'
+    if save_model_path is not None:
+        save_path = save_model_path
     label = 'module_labels'
     predictor = TabularPredictor(label=label, path=save_path)
     predictor.fit(train_data, num_bag_folds=5, num_bag_sets=1, num_stack_levels=0,
@@ -166,7 +162,7 @@ def train_auto_gl_mul():
                   hyperparameter_tune_kwargs=hyperparameter_tune_kwargs, verbosity=4,
                   ag_args_fit={'num_gpus': 1},
                   )
-    logger.info("multi:\n" + predictor.fit_summary())
+    logger.info("multi:\n" + str(predictor.fit_summary()))
 
 
 # 一次性打包整个根目录。空子目录会被打包。
@@ -187,7 +183,7 @@ def make_targz_one_by_one(output_filename, source_dir):
     tar.close()
 
 
-def send_model(host):
+def send_model(host, dt, file_name=None):
     # 传输数据间隔符
     SEPARATOR = '<SEPARATOR>'
     # 服务器信息
@@ -196,9 +192,13 @@ def send_model(host):
     # 文件缓冲区
     Buffersize = 4096 * 10
     # 传输文件名字
-    filename = "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/Anomaly-Detection-IoT23/model.tar.gz"
+    if file_name is None:
+        file = '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'\
+                + dt.strftime("%Y-%m-%d%H-%M-%S")+'/model.tar.gz'
+    else:
+        file = file_name
     # 文件大小
-    file_size = os.path.getsize(filename)
+    file_size = os.path.getsize(file)
     # 创建socket链接
     s = socket.socket()
     print(f'服务器连接中{host}:{port}')
@@ -206,12 +206,12 @@ def send_model(host):
     print('与服务器连接成功')
 
     # 发送文件名字和文件大小，必须进行编码处理
-    s.send(f'{filename}{SEPARATOR}{file_size}'.encode())
+    s.send(f'{file}{SEPARATOR}{file_size}'.encode())
 
     # 文件传输
-    progress = tqdm.tqdm(range(file_size), f'发送{filename}', unit='B', unit_divisor=1024)
+    progress = tqdm.tqdm(range(file_size), f'发送{file}', unit='B', unit_divisor=1024)
 
-    with open(filename, 'rb') as f:
+    with open(file, 'rb') as f:
         # 读取文件
         for _ in progress:
             bytes_read = f.read(Buffersize)
@@ -234,7 +234,7 @@ def on_send_error(excp):
     logger.error('error' + str(excp))
 
 
-def main():
+def main(file):
     dt = datetime.datetime.now()
     logger.add(dt.strftime("%Y-%m-%d%H-%M-%S") + '_cloud_model.log')
     try:
@@ -248,17 +248,17 @@ def main():
                 global model_host
                 model_host = message.value["data_host"]
                 received()
-                train_auto_gl()
-                train_auto_gl_mul()
-                make_targz('model.tar.gz',
-                           "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model"
-                           "/auto_gl/edge_model")
+                train_auto_gl(file)
+                train_auto_gl_mul(file)
+                make_targz('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
+                           + dt.strftime("%Y-%m-%d%H-%M-%S")+'/model.tar.gz',
+                           "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model")
                 producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
                                          value_serializer=lambda m: json.dumps(m).encode('ascii'))
-                json_content = {"type": 'new_model_k', "time": str(time.time()), "model_host": model_host}
+                json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
                 producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
                 producer.close()
-                send_model(model_host)
+                send_model(model_host, dt)
         consumer.close()
     except:
         print("open kafka server first!")
