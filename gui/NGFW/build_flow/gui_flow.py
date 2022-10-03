@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import time
 import tkinter
 from pathlib import Path
 
@@ -13,12 +14,15 @@ from tkinter import filedialog, Canvas, Frame, Text, Button, PhotoImage, message
 from kafka import KafkaProducer
 from loguru import logger
 
+from gui.NGFW.build_args.gui_args import MY_ARGS_GUI
+from gui.NGFW.build_command.gui_command import MY_COMMAND_GUI
 from src.client.receive_parquet_train import train_auto_gl, train_auto_gl_mul, make_targz, on_send_success, \
     on_send_error, send_model
 
 
-class MY_FLOW_GUI():
+class MY_FLOW_GUI(tkinter.Toplevel):
     def __init__(self, flow_window):
+        super().__init__()
         self.flow_window = flow_window
         self.OUTPUT_PATH = Path(__file__).parent
         self.ASSETS_PATH = self.OUTPUT_PATH / Path("assets")
@@ -29,6 +33,30 @@ class MY_FLOW_GUI():
 
     def goto_main(self):
         self.flow_window.destroy()
+
+    def goto_config(self):
+        # config file configure
+        config_window = tkinter.Toplevel(self.flow_window)
+        config_win = MY_COMMAND_GUI(config_window)
+        config_win.set_command_window()
+        logger.log(1, "config page start" + str(time.time()))
+        config_window.mainloop()
+
+    def goto_args(self):
+        # window = tkinter.Toplevel(self.flow_window)
+        pw = MY_ARGS_GUI(self)
+        logger.log(1, "args page start" + str(time.time()))
+        self.wait_window(pw)  # 这一句很重要！！！
+        return
+
+    def send_slips_order(self):
+        producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
+                                 value_serializer=lambda m: json.dumps(m).encode('ascii'))
+        order_param = {"filepath": '', "interface": 'eth0', "order": 'start', "blocking": False}
+        json_content = {"type": 'new_slips_order', "time": str(time.time()), "model_host": 'k',
+                        "order_param": order_param}
+        producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
+        producer.close()
 
     def upload_file(self):
         selectFiles = tkinter.filedialog.askopenfilenames()  # askopenfilename 1次上传1个；askopenfilenames1次上传多个
@@ -46,31 +74,32 @@ class MY_FLOW_GUI():
             rule_index = 0
         if self.file_printout.get(rule_index) is None or self.file_printout.get(rule_index) == '':
             messagebox.showwarning("Error", "No file select")
-        file_name = self.file_printout.get(rule_index)
-        dt = datetime.datetime.now()
-        model_host = 'k'
-        if '.csv' in file_name:
-            logger.add('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/log/'
-                       + dt.strftime("%Y-%m-%d%H-%M-%S") + '_cloud_model.log')
-            os.mkdir('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
-                     + dt.strftime("%Y-%m-%d%H-%M-%S"))
-            train_auto_gl(file_name)
-            train_auto_gl_mul(file_name)
-            make_targz('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
-                       + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz',
-                       "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model")
-            logger.log(1, "new file trained"+ dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
-        producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
-                                 value_serializer=lambda m: json.dumps(m).encode('ascii'))
-        json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
-        producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
-        producer.close()
-        if '.csv' not in file_name:
-            send_model(model_host, dt, file_name=file_name)
-            logger.log(1, "previous model send" + file_name)
         else:
-            send_model(model_host, dt)
-            logger.log(1, "new model send" + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
+            file_name = self.file_printout.get(rule_index)
+            dt = datetime.datetime.now()
+            model_host = 'k'
+            if '.csv' in file_name:
+                logger.add('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/log/'
+                           + dt.strftime("%Y-%m-%d%H-%M-%S") + '_cloud_model.log')
+                os.mkdir('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
+                         + dt.strftime("%Y-%m-%d%H-%M-%S"))
+                train_auto_gl(file_name)
+                train_auto_gl_mul(file_name)
+                make_targz('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
+                           + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz',
+                           "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model")
+                logger.log(1, "new file trained"+ dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
+            producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
+                                     value_serializer=lambda m: json.dumps(m).encode('ascii'))
+            json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
+            producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
+            producer.close()
+            if '.csv' not in file_name:
+                send_model(model_host, dt, 2234,  file_name=file_name)
+                logger.log(1, "previous model send" + file_name)
+            else:
+                send_model(model_host, dt, 2234)
+                logger.log(1, "new model send" + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
 
     def set_flow_window(self):
         self.flow_window.geometry("1317x855")
@@ -306,7 +335,7 @@ class MY_FLOW_GUI():
                                 image=self.button_image_10,
                                 borderwidth=0,
                                 highlightthickness=0,
-                                command=lambda: print("button_10 clicked"),
+                                command=self.goto_config,
                                 relief="flat"
                                 )
         self.button_10.place(
@@ -409,7 +438,7 @@ class MY_FLOW_GUI():
                                 image=self.button_image_15,
                                 borderwidth=0,
                                 highlightthickness=0,
-                                command=lambda: print("button_15 clicked"),
+                                command=self.goto_args,
                                 relief="flat"
                                 )
         self.button_15.place(
@@ -434,7 +463,7 @@ class MY_FLOW_GUI():
                                 image=self.button_image_16,
                                 borderwidth=0,
                                 highlightthickness=0,
-                                command=lambda: print("button_16 clicked"),
+                                command=self.send_slips_order,
                                 relief="flat"
                                 )
         self.button_16.place(

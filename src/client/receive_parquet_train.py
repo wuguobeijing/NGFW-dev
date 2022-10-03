@@ -183,12 +183,12 @@ def make_targz_one_by_one(output_filename, source_dir):
     tar.close()
 
 
-def send_model(host, dt, file_name=None):
+def send_model(host, dt, port_num, file_name=None):
     # 传输数据间隔符
     SEPARATOR = '<SEPARATOR>'
     # 服务器信息
     host = host
-    port = 2234
+    port = port_num
     # 文件缓冲区
     Buffersize = 4096 * 10
     # 传输文件名字
@@ -258,7 +258,7 @@ def main(file):
                 json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
                 producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
                 producer.close()
-                send_model(model_host, dt)
+                send_model(model_host, dt, 2234)
         consumer.close()
     except:
         print("open kafka server first!")
@@ -273,10 +273,10 @@ def send_slips_order():
     producer.close()
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # while True:
     # main()
-    send_slips_order()
+    # send_slips_order()
     # producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',value_serializer=lambda m: json.dumps(m).encode('ascii'))
     # json_content = {"type": 'new_model_k', "time": str(time.time()), "model_host": 'k'}
     # producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
