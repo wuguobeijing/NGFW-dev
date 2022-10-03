@@ -7,15 +7,17 @@ from pathlib import Path
 # Explicit imports to satisfy Flake8
 from tkinter import Tk, Canvas, Text, Button, PhotoImage, LabelFrame, IntVar, Radiobutton, N, Checkbutton, END
 
+
 class MY_ARGS_GUI(tkinter.Toplevel):
     def relative_to_assets(self, path: str) -> Path:
         return self.ASSETS_PATH / Path(path)
 
     def add_args(self):
-        self.interface = self.entry_interface.get(1.0, END)
-        self.gui = self.varGUI.get()
-        self.log_level = self.table_num_log.get()
-        self.mode = self.table_num_label.get()
+        self.parent.interface = [self.entry_interface.get(1.0, END).split('\n')[0], 'eth0'][self.entry_interface.get(1.0, END) == '\n']
+        self.parent.gui = [True, False][self.varGUI.get() == 0]
+        self.parent.log_level = str(self.table_num_log.get())
+        self.parent.mode = self.table_num_label.get()
+        self.destroy()  # 销毁窗口
 
     def __init__(self, parent):
         super().__init__()
@@ -225,6 +227,7 @@ class MY_ARGS_GUI(tkinter.Toplevel):
             width=196.0,
             height=59.0
         )
+
 
 if __name__ == '__main__':
     init_window = Tk()  # 实例化出一个父窗口

@@ -26,7 +26,10 @@ class MY_FLOW_GUI(tkinter.Toplevel):
         self.flow_window = flow_window
         self.OUTPUT_PATH = Path(__file__).parent
         self.ASSETS_PATH = self.OUTPUT_PATH / Path("assets")
-        self.selected_device = None
+        self.interface = 'eth0'
+        self.log_level = '1'
+        self.mode = 3
+        self.gui = False
 
     def relative_to_assets(self, path: str) -> Path:
         return self.ASSETS_PATH / Path(path)
@@ -50,9 +53,17 @@ class MY_FLOW_GUI(tkinter.Toplevel):
         return
 
     def send_slips_order(self):
+        blocking = False
+        clear_blocking = False
+        print((self.interface, self.gui, self.mode, self.log_level))
+        if self.mode == 1:
+            blocking = True
+        elif self.mode == 2:
+            clear_blocking = True
         producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
                                  value_serializer=lambda m: json.dumps(m).encode('ascii'))
-        order_param = {"filepath": '', "interface": 'eth0', "order": 'start', "blocking": False}
+        order_param = {"filepath": '', "interface": self.interface, "order": 'start', "blocking": blocking,
+                       "clear_blocking": clear_blocking, "log_level": self.log_level, "gui": self.gui}
         json_content = {"type": 'new_slips_order', "time": str(time.time()), "model_host": 'k',
                         "order_param": order_param}
         producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
@@ -88,14 +99,14 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                 make_targz('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/'
                            + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz',
                            "/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model")
-                logger.log(1, "new file trained"+ dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
+                logger.log(1, "new file trained" + dt.strftime("%Y-%m-%d%H-%M-%S") + '/model.tar.gz')
             producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
                                      value_serializer=lambda m: json.dumps(m).encode('ascii'))
             json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
             producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
             producer.close()
             if '.csv' not in file_name:
-                send_model(model_host, dt, 2234,  file_name=file_name)
+                send_model(model_host, dt, 2234, file_name=file_name)
                 logger.log(1, "previous model send" + file_name)
             else:
                 send_model(model_host, dt, 2234)
