@@ -2,12 +2,13 @@
 # https://github.com/ParthJadhav/Tkinter-Designer
 import datetime
 import json
+import shutil
 from pathlib import Path
 
 # from tkinter import *
 # Explicit imports to satisfy Flake8
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, LabelFrame, IntVar, Radiobutton, N, S, W, E, Frame, \
-    Scrollbar, Listbox, BOTH, END, Checkbutton
+    Scrollbar, Listbox, BOTH, END, Checkbutton, ACTIVE, messagebox
 
 from kafka import KafkaProducer
 
@@ -24,6 +25,71 @@ class MY_COMMAND_GUI():
         return self.ASSETS_PATH / Path(path)
 
     def send_config(self):
+        shutil.copy('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/cache/slips.conf',
+                    '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/slips.conf')
+        config_content = open('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/slips.conf', 'a+')
+        print(config_content)
+        config_content.seek(0)
+        new_content = ''
+
+        log_rule = 'create_log_files = no'
+        if self.table_num.get() == 1:
+            log_rule = 'create_log_files = yes'
+
+        if self.entry_exp.get(1.0, END) != '\n' and self.entry_exp.get(1.0, END).split('\n')[0].isnumeric():
+            expire_time_rule = 'tcp_inactivity_timeout = ' + self.entry_exp.get(1.0, END).split('\n')[0]
+        elif self.entry_exp.get(1.0, END) == '\n':
+            expire_time_rule = 'tcp_inactivity_timeout = 60'
+        else:
+            messagebox.showerror('Error', 'must input int var!')
+            return
+
+        new_db_rule = 'deletePrevdb = False'
+        if self.vardelete.get() == 1:
+            new_db_rule = 'deletePrevdb = True'
+
+        label_binary = 'label = unknown'
+        if self.table_num_label.get() == 1:
+            if self.rule_printout.get(ACTIVE) == 'normal':
+                label_binary = 'label = normal'
+            else:
+                messagebox.showerror('Error', 'label and multi-label not match!')
+                return
+        elif self.table_num_label.get() == 2:
+            if self.rule_printout.get(ACTIVE) in ['DDoS', 'C&C', 'msf', 'nmap', 'unknown_attack']:
+                label_binary = 'label = malicious'
+            else:
+                messagebox.showerror('Error', 'label and multi-label not match!')
+                return
+
+        label_multi = 'module_labels = ' + self.rule_printout.get(ACTIVE)
+        if self.table_num.get() == 1:
+            if self.table_num_label.get() == 1 or self.table_num_label.get() == 2:
+                mode = 'mode = train'
+            else:
+                messagebox.showerror('Error', 'label and mode not match!')
+                return
+        else:
+            if self.table_num_label.get() == 3:
+                mode = 'mode = test'
+            else:
+                messagebox.showerror('Error', 'label and mode not match!')
+                return
+
+        for lines in config_content:
+            if '[parameters]' in lines:
+                lines = lines + '\n' + log_rule + '\n' + expire_time_rule + '\n' + new_db_rule + '\n' \
+                        + label_binary + '\n' + label_multi
+                print(lines)
+            if '[flowmldetection]' in lines:
+                lines = lines + '\n' + mode+ '\n'
+                print(lines)
+            new_content = new_content + lines
+        config_content.seek(0)
+        config_content.truncate()
+        config_content.write(new_content)
+        config_content.flush()
+        config_content.close()
         dt = datetime.datetime.now()
         producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
                                  value_serializer=lambda m: json.dumps(m).encode('ascii'))
@@ -31,7 +97,7 @@ class MY_COMMAND_GUI():
         producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
         producer.close()
         send_model('k', dt, 2235, file_name='/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model'
-                                            '/cache/slips.conf')
+                                            '/auto_gl/slips.conf')
 
     def set_command_window(self):
         self.command_window.geometry("960x304")
@@ -151,7 +217,7 @@ class MY_COMMAND_GUI():
             height=25.0)
         TABLES = [('train', 1), ('test', 2)]
         self.table_num = IntVar()
-        self.table_num.set(1)
+        self.table_num.set(2)
         for TABLE, num in TABLES:
             b = Radiobutton(self.choose_table_mode, text=TABLE, variable=self.table_num, value=num,
                             background="#2ACAFC")

@@ -7,13 +7,16 @@ import time
 import tkinter
 from pathlib import Path
 
+import pandas as pd
+from autogluon.tabular import TabularPredictor, TabularDataset
 # from tkinter import *
 # Explicit imports to satisfy Flake8
-from tkinter import filedialog, Canvas, Frame, Text, Button, PhotoImage, messagebox, BOTH, ACTIVE
+from tkinter import filedialog, Canvas, Frame, Text, Button, PhotoImage, messagebox, BOTH, ACTIVE, END
 
 from kafka import KafkaProducer
 from loguru import logger
 
+from gui.NGFW.Plotter.plotter import Plotter
 from gui.NGFW.build_args.gui_args import MY_ARGS_GUI
 from gui.NGFW.build_command.gui_command import MY_COMMAND_GUI
 from src.client.receive_parquet_train import train_auto_gl, train_auto_gl_mul, make_targz, on_send_success, \
@@ -68,6 +71,40 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                         "order_param": order_param}
         producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
         producer.close()
+        messagebox.showinfo('send', 'start message sent')
+
+    def get_last_model(self):
+        self.entry_1.delete(1.0, END)
+        binary_summary = pd.read_csv('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/plot_files/binary.csv',)
+        header = binary_summary.head()
+        self.entry_1.insert(END, 'binary:\n')
+        self.entry_1.insert(END, header)
+        data = binary_summary.values.tolist()
+        print(data)
+        for column in data:
+            self.entry_1.insert(END, str(column))
+        multi_summary = pd.read_csv('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/plot_files/multi.csv',)
+        header = multi_summary.head()
+        self.entry_1.insert(END, 'multi:\n')
+        self.entry_1.insert(END, header)
+        data = multi_summary.values.tolist()
+        print(data)
+        for column in data:
+            self.entry_1.insert(END, str(column))
+
+    def go_to_plot(self):
+        plot_window = tkinter.Toplevel(self.flow_window)
+        plot_win = Plotter(plot_window)
+        plot_win.run()
+
+    def stop_thread(self):
+        producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
+                                 value_serializer=lambda m: json.dumps(m).encode('ascii'))
+        order_param = {"order": 'stop'}
+        json_content = {"type": 'new_slips_order', "time": str(time.time()), "model_host": 'k',
+                        "order_param": order_param}
+        producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
+        producer.close()
 
     def upload_file(self):
         selectFiles = tkinter.filedialog.askopenfilenames()  # askopenfilename 1次上传1个；askopenfilenames1次上传多个
@@ -105,6 +142,23 @@ class MY_FLOW_GUI(tkinter.Toplevel):
             json_content = {"type": 'new_model_k', "time": dt.strftime("%Y-%m-%d%H-%M-%S"), "model_host": model_host}
             producer.send('new_train_topic', json_content).add_callback(on_send_success).add_errback(on_send_error)
             producer.close()
+            # 二分类结果输出
+            binary_pre = TabularPredictor.load(
+                '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model/binary')
+            binary_summary = binary_pre.fit_summary()
+            print('-----------' * 10)
+            print(binary_summary.get('leaderboard'))
+            binary_summary.get('leaderboard').to_csv(
+                '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/plot_files/binary.csv')
+            # multi 分类结果输出
+            multi_pre = TabularPredictor.load(
+                '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/edge_model/multi')
+            multi_summary = multi_pre.fit_summary()
+            print('-----------' * 10)
+            print(multi_summary.get('leaderboard'))
+            multi_summary.get('leaderboard').to_csv(
+                '/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/auto_gl/plot_files/multi.csv')
+            time.sleep(1)
             if '.csv' not in file_name:
                 send_model(model_host, dt, 2234, file_name=file_name)
                 logger.log(1, "previous model send" + file_name)
@@ -312,7 +366,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_9,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_9 clicked"),
+                               command=self.stop_thread,
                                relief="flat"
                                )
         self.button_9.place(
@@ -355,7 +409,18 @@ class MY_FLOW_GUI(tkinter.Toplevel):
             width=157.84524536132812,
             height=78.0
         )
-
+        self.entry_1 = Text(
+            self.canvas,
+            bd=0,
+            bg="#F8F8F8",
+            highlightthickness=0
+        )
+        self.entry_1.place(
+            x=835.0,
+            y=324.0,
+            width=391.0,
+            height=161.0
+        )
         self.button_image_11 = PhotoImage(
             file=self.relative_to_assets("button_11.png"))
         self.button_11 = Button(self.canvas,
@@ -378,7 +443,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                 image=self.button_image_12,
                                 borderwidth=0,
                                 highlightthickness=0,
-                                command=lambda: print("button_12 clicked"),
+                                command=self.get_last_model,
                                 relief="flat"
                                 )
         self.button_12.place(
@@ -394,7 +459,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                 image=self.button_image_13,
                                 borderwidth=0,
                                 highlightthickness=0,
-                                command=lambda: print("button_13 clicked"),
+                                command=self.go_to_plot,
                                 relief="flat"
                                 )
         self.button_13.place(

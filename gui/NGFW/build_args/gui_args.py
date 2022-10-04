@@ -232,5 +232,4 @@ class MY_ARGS_GUI(tkinter.Toplevel):
 if __name__ == '__main__':
     init_window = Tk()  # 实例化出一个父窗口
     tool = MY_ARGS_GUI(init_window)
-    tool.set_args_window()
     init_window.mainloop()
