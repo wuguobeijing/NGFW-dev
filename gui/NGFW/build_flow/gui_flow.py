@@ -171,7 +171,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
         self.flow_window.iconphoto(False, tkinter.PhotoImage(
             file='/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/gui/NGFW/LOGO.png'))
         self.flow_window.configure(bg="#282B2D")
-        self.flow_window.resizable(False, False)
+        self.flow_window.resizable(True, True)
 
         self.canvas = Canvas(
             self.flow_window,

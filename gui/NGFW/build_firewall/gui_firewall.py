@@ -85,7 +85,7 @@ class MY_FIREWALL_GUI():
         self.firewall_window.configure(bg="#282B2D")
         self.firewall_window.iconphoto(False, tkinter.PhotoImage(
             file='/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/gui/NGFW/LOGO.png'))
-        self.firewall_window.resizable(False, False)
+        self.firewall_window.resizable(True, True)
         self.canvas = Canvas(
             self.firewall_window,
             bg="#282B2D",
