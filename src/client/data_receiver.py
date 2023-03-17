@@ -14,7 +14,7 @@ class KafkaEventThread(Thread):
         super().__init__()
         self.topic = topic_event
         self.table_name_mul = 'multi'
-        self.table_name_seanson = 'seasonal'
+        self.table_name_season = 'seasonal'
         self.consumer = KafkaConsumer(self.topic, value_deserializer=lambda m: json.loads(m.decode('ascii')),
                                       bootstrap_servers=['localhost:9092'], group_id='cloud-group',
                                       enable_auto_commit=False)
@@ -32,7 +32,7 @@ class KafkaEventThread(Thread):
                 item = message.value
                 print("%s,:%d,:%d,:value=%s" % (message.topic, message.partition, message.offset, message.value))
                 print("value=%s" % (item))
-                sql_season = "INSERT INTO `"+self.table_name_seanson+"`(`data`) VALUES ("+str(item['data_season']) + ")"
+                sql_season = "INSERT INTO `"+self.table_name_season+"`(`data`) VALUES ("+str(item['data_season']) + ")"
                 # print(sql_season)
                 sql_mul = "INSERT INTO `" + self.table_name_mul + "`(`data1`,`data2`,`data3`,`data4`) VALUES (" \
                           + str(item['data_mul'][0]) + ',' + str(item['data_mul'][1]) + ',' + str(item['data_mul'][2])+\
