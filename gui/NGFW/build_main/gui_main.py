@@ -12,6 +12,8 @@ from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Toplevel
 from gui.NGFW.build_business.gui_business import MY_BUSINESS_GUI
 from gui.NGFW.build_firewall.gui_firewall import MY_FIREWALL_GUI
 from gui.NGFW.build_flow.gui_flow import MY_FLOW_GUI
+from gui.NGFW.build_help.gui_help import MY_HELP_GUI
+from gui.NGFW.build_log.gui_log import MY_LOG_GUI
 
 
 class MY_GUI():
@@ -72,7 +74,7 @@ class MY_GUI():
             image=self.button_image_2,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_2 clicked"),
+            command=self.open_log,
             relief="flat"
         )
         self.button_2.place(
@@ -88,7 +90,7 @@ class MY_GUI():
             image=self.button_image_3,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_3 clicked"),
+            # command=,
             relief="flat"
         )
         self.button_3.place(
@@ -234,7 +236,7 @@ class MY_GUI():
             image=self.button_image_9,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_9 clicked"),
+            command=self.open_log,
             relief="flat"
         )
         self.button_9.place(
@@ -250,7 +252,7 @@ class MY_GUI():
             image=self.button_image_10,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_10 clicked"),
+            command=self.open_help,
             relief="flat"
         )
         self.button_10.place(
@@ -299,6 +301,19 @@ class MY_GUI():
         business_win.set_business_window()
         self.log.info("business_window page start" + str(time.time()))
         business_window.mainloop()
+
+    def open_log(self):
+        log_window = Toplevel(self.init_window)
+        LOG_window = MY_LOG_GUI(log_window)
+        LOG_window.set_log_window()
+        LOG_window.read_common_log()
+        log_window.mainloop()
+
+    def open_help(self):
+        help_window = Toplevel(self.init_window)
+        HELP_window = MY_HELP_GUI(help_window)
+        HELP_window.set_help_window()
+        help_window.mainloop()
 
     def close_window(self):
         ans = askyesno(title='Warning', message='are you sure to exit?')
