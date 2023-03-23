@@ -129,7 +129,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_2,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_2 clicked"),
+            command=messagebox.showwarning("warning", "read log from the main page"),
             # relief="flat"
         )
         self.button_2.place(
@@ -146,7 +146,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_3,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_3 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             # relief="flat"
         )
         self.button_3.place(
@@ -163,7 +163,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_4,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_4 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             # relief="flat"
         )
         self.button_4.place(
@@ -180,7 +180,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_5,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_5 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_5.place(
@@ -197,7 +197,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_6,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_6 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_6.place(
@@ -214,7 +214,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_7,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_7 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_7.place(
@@ -231,7 +231,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_8,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_8 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_8.place(
@@ -307,7 +307,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_11,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_11 clicked"),
+            command=messagebox.showwarning("warning", "function only support single device yet"),
             relief="flat"
         )
         self.button_11.place(

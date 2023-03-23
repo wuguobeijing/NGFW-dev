@@ -71,7 +71,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_1,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_1 clicked"),
+            command=self.goto_main,
             relief="flat"
         )
         self.button_1.place(
@@ -88,7 +88,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_2,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_2 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_2.place(
@@ -105,7 +105,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_3,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_3 clicked"),
+            command=lambda: print("clear data"),
             relief="flat"
         )
         self.button_3.place(
@@ -173,7 +173,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_7,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_7 clicked"),
+            command=messagebox.showwarning("warning", "back to main page first"),
             relief="flat"
         )
         self.button_7.place(
@@ -190,7 +190,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_8,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_8 clicked"),
+            command=self.goto_main,
             relief="flat"
         )
         self.button_8.place(

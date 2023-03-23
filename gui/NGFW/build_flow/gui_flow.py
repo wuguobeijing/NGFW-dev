@@ -18,6 +18,7 @@ from loguru import logger
 
 from gui.NGFW.Plotter.plotter import Plotter
 from gui.NGFW.build_args.gui_args import MY_ARGS_GUI
+from gui.NGFW.build_business.gui_business import MY_BUSINESS_GUI
 from gui.NGFW.build_command.gui_command import MY_COMMAND_GUI
 from src.client.receive_parquet_train import train_auto_gl, train_auto_gl_mul, make_targz, on_send_success, \
     on_send_error, send_model
@@ -96,6 +97,12 @@ class MY_FLOW_GUI(tkinter.Toplevel):
         plot_window = tkinter.Toplevel(self.flow_window)
         plot_win = Plotter(plot_window)
         plot_win.run()
+
+    def goto_business(self):
+        business_window = tkinter.Toplevel(self.flow_window)
+        business_win = MY_BUSINESS_GUI(business_window)
+        business_win.set_business_window()
+        business_window.mainloop()
 
     def stop_thread(self):
         producer = KafkaProducer(bootstrap_servers='wuguo-buaa:9092',
@@ -214,7 +221,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_2,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_2 clicked"),
+                               command=messagebox.showwarning("warning", "back to main page first"),
                                relief="flat"
                                )
         self.button_2.place(
@@ -230,7 +237,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_3,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_3 clicked"),
+                               command=messagebox.showwarning("warning", "back to main page first"),
                                relief="flat"
                                )
         self.button_3.place(
@@ -246,7 +253,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_4,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_4 clicked"),
+                               command=self.goto_business,
                                relief="flat"
                                )
         self.button_4.place(
@@ -294,7 +301,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_7,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_7 clicked"),
+                               command=messagebox.showwarning("warning", "back to main page first"),
                                relief="flat"
                                )
         self.button_7.place(
@@ -310,7 +317,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_8,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=lambda: print("button_8 clicked"),
+                               command=self.goto_main,
                                relief="flat"
                                )
         self.button_8.place(
