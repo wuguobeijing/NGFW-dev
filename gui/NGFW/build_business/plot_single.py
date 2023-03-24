@@ -12,11 +12,12 @@ from adtk.data import validate_series
 from adtk.detector import SeasonalAD
 
 class MY_SINGLE_GUI(tkinter.Toplevel):
-    def __init__(self, single_window):
+    def __init__(self, single_window, c, side, trend):
         super().__init__()
         self.single_window = single_window
         self.result = pd.DataFrame
         self.ts = 0
+        self.seasonal_ad = SeasonalAD(c=c, side=side, trend=trend)
 
     def set_single_window(self):
         # 创建tkinter主界面
@@ -43,12 +44,10 @@ class MY_SINGLE_GUI(tkinter.Toplevel):
         self.plot_single()
 
     def generate_data2(self):
-        # ToDo: give parameters input from business page (c and side)
-        seasonal_ad = SeasonalAD(c=3.0, side="both")
         global ts
         s = pd.read_csv('/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/src/Model/Data/seasonal.csv', index_col="Time", parse_dates=True, squeeze=True)
         s = validate_series(s)
-        anomalies = seasonal_ad.fit_detect(s)
+        anomalies = self.seasonal_ad.fit_detect(s)
         df = pd.DataFrame(anomalies, columns=['Traffic'])
         df = df[self.ts:self.ts+100]
         df.rename(columns={'Time': 'Time', 'Traffic': 'label'}, inplace=True)

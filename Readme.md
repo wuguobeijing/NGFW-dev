@@ -51,7 +51,14 @@
 #### auto_gl
 ##### edge_model
 **binary**二分类-攻击检测模型
+model parameters:
+side = 'both'
+c = 3
+trend = False
 **multi**多分类-攻击识别模型
+model parameters:
+k = 1
+c_mul = 5
 ##### plot_files
 对二分类与多分类的模型训练结果进行呈现
 #### cache

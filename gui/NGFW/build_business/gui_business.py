@@ -18,6 +18,11 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
         self.business_window = business_window
         self.OUTPUT_PATH = Path(__file__).parent
         self.ASSETS_PATH = self.OUTPUT_PATH / Path("assets")
+        self.side = 'both'
+        self.c = 3
+        self.trend = False
+        self.k = 1
+        self.c_mul = 5
 
     def relative_to_assets(self, path: str) -> Path:
         return self.ASSETS_PATH / Path(path)
@@ -28,16 +33,88 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
     def goto_single_flow(self):
         # single
         single_window = tkinter.Toplevel(self.business_window)
-        single_win = MY_SINGLE_GUI(single_window)
+        single_win = MY_SINGLE_GUI(single_window, self.c, self.side, self.trend)
         single_win.set_single_window()
         single_window.mainloop()
 
     def goto_multi_flow(self):
-        # single
+        # multi
         multi_window = tkinter.Toplevel(self.business_window)
-        multi_win = MY_MULTI_GUI(multi_window)
+        multi_win = MY_MULTI_GUI(multi_window, self.k, self.c_mul)
         multi_win.set_single_window()
         multi_window.mainloop()
+
+    def pop_win_command(self):
+        pop_win = tkinter.Toplevel()
+        pop_win.title("模型参数")
+        pop_win.geometry("350x250+200+200")  # 定义弹窗大小及位置，前两个是大小，用字母“x”连接，后面是位置。
+        label_single = tkinter.Label(pop_win, text="单参数周期检测", width=15)
+        label_single.grid(row=1, column=0, padx=5, pady=5)
+        label_2 = tkinter.Label(pop_win, text="(+、-、both)", width=15)
+        label_2.grid(row=3, column=0, padx=5, pady=5)
+
+        label_2 = tkinter.Label(pop_win, text="检测残差方向", width=15)
+        label_2.grid(row=2, column=0, padx=5, pady=5)
+        entry_2 = tkinter.Entry(pop_win, width=20)
+        entry_2.grid(row=2, column=1, padx=5, pady=5)
+        entry_2.focus_set()  # 把焦点设置到输入框上，就是弹窗一出，光标在输入框里了。
+
+        label_3 = tkinter.Label(pop_win, text="容忍度（整数）", width=15)
+        label_3.grid(row=4, column=0, padx=5, pady=5)
+        entry_3 = tkinter.Entry(pop_win, width=20)
+        entry_3.grid(row=4, column=1, padx=5, pady=5)
+
+        label_4 = tkinter.Label(pop_win, text="趋势（布尔）", width=15)
+        label_4.grid(row=5, column=0, padx=5, pady=5)
+        entry_4 = tkinter.Entry(pop_win, width=20)
+        entry_4.grid(row=5, column=1, padx=5, pady=5)
+
+        pop_win_mul = tkinter.Toplevel()
+        pop_win_mul.title("模型参数")
+        pop_win_mul.geometry("350x200+500+200")  # 定义弹窗大小及位置，前两个是大小，用字母“x”连接，后面是位置。
+        label_mul = tkinter.Label(pop_win_mul, text="多参数相关检测", width=15)
+        label_mul.grid(row=1, column=0, padx=5, pady=5)
+
+        label_2_mul = tkinter.Label(pop_win_mul, text="主成分数量（整数）", width=15)
+        label_2_mul.grid(row=2, column=0, padx=5, pady=5)
+        entry_2_mul = tkinter.Entry(pop_win_mul, width=20)
+        entry_2_mul.grid(row=2, column=1, padx=5, pady=5)
+        entry_2_mul.focus_set()  # 把焦点设置到输入框上，就是弹窗一出，光标在输入框里了。
+
+        label_3_mul = tkinter.Label(pop_win_mul, text="边界值（整数）", width=15)
+        label_3_mul.grid(row=4, column=0, padx=5, pady=5)
+        entry_3_mul = tkinter.Entry(pop_win_mul, width=20)
+        entry_3_mul.grid(row=4, column=1, padx=5, pady=5)
+
+        def chuli():  # 定义处理方法
+            side = entry_2.get()
+            if '+' in side:
+                self.side = 'positive'
+            elif '-' in side:
+                self.side = 'negative'
+            else:
+                self.side = 'both'
+            self.c = int(entry_3.get())
+            trend = entry_4.get()
+            if 'F' in trend or 'f' in trend:
+                self.trend = False
+            else:
+                self.trend = True
+            print(self.side)
+            print(self.c)
+            print(self.trend)
+            pop_win.destroy()  # 关闭弹窗
+        b2 = Button(pop_win, width=20, text="提交", command=chuli)
+        b2.grid(row=6, column=1, padx=5, pady=5)
+
+        def chuli_mul():  # 定义处理方法
+            self.k = int(entry_2_mul.get())
+            self.c_mul = int(entry_3_mul.get())
+            print(self.c_mul)
+            print(self.k)
+            pop_win_mul.destroy()  # 关闭弹窗
+        b3 = Button(pop_win_mul, width=20, text="提交", command=chuli_mul)
+        b3.grid(row=6, column=1, padx=5, pady=5)
 
     def set_business_window(self):
         self.business_window.geometry("1317x855")
@@ -88,7 +165,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_2,
             borderwidth=0,
             highlightthickness=0,
-            command=messagebox.showwarning("warning", "back to main page first"),
+            command=lambda: print("button_2 clicked"),
             relief="flat"
         )
         self.button_2.place(
@@ -173,7 +250,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_7,
             borderwidth=0,
             highlightthickness=0,
-            command=messagebox.showwarning("warning", "back to main page first"),
+            command=lambda: print("button_7 clicked"),
             relief="flat"
         )
         self.button_7.place(
@@ -227,7 +304,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
 
         self.canvas.create_text(
             1056.0,
-            821.0,
+            820.0,
             anchor="nw",
             text="当前支持MQTT协议检测",
             fill="#D9D9D9",
@@ -249,7 +326,7 @@ class MY_BUSINESS_GUI(tkinter.Toplevel):
             image=self.button_image_9,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_9 clicked"),
+            command=self.pop_win_command,
             relief="flat"
         )
         self.button_9.place(

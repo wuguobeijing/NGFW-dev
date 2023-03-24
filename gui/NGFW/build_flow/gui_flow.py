@@ -221,7 +221,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_2,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=messagebox.showwarning("warning", "back to main page first"),
+                               command=lambda: print("button_2 clicked"),
                                relief="flat"
                                )
         self.button_2.place(
@@ -237,7 +237,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_3,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=messagebox.showwarning("warning", "back to main page first"),
+                               command=lambda: print("button_3 clicked"),
                                relief="flat"
                                )
         self.button_3.place(
@@ -301,7 +301,7 @@ class MY_FLOW_GUI(tkinter.Toplevel):
                                image=self.button_image_7,
                                borderwidth=0,
                                highlightthickness=0,
-                               command=messagebox.showwarning("warning", "back to main page first"),
+                               command=lambda: print("button_7 clicked"),
                                relief="flat"
                                )
         self.button_7.place(

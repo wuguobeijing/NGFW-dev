@@ -18,7 +18,7 @@ from gui.NGFW.build_log.gui_log import MY_LOG_GUI
 
 class MY_GUI():
     def __init__(self, init_window, log):
-        self.jobtxt = None
+        # self.jobtxt = None
         self.init_window = init_window
         self.OUTPUT_PATH = Path(__file__).parent
         self.ASSETS_PATH = self.OUTPUT_PATH / Path("assets")
@@ -31,7 +31,8 @@ class MY_GUI():
     def set_init_window(self):
         self.init_window.geometry("1317x855")
         self.init_window.configure(bg="#282B2D")
-        self.init_window.iconphoto(False, tkinter.PhotoImage(file='/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects/NGFW-dev/gui/NGFW/LOGO.png'))
+        self.init_window.iconphoto(False, tkinter.PhotoImage(file='/media/wuguo-buaa/LENOVO_USB_HDD/PycharmProjects'
+                                                                  '/NGFW-dev/gui/NGFW/LOGO.png'))
 
         self.canvas = Canvas(
             self.init_window,
