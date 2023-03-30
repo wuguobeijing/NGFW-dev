@@ -79,10 +79,10 @@ class MY_COMMAND_GUI():
         for lines in config_content:
             if '[parameters]' in lines:
                 lines = lines + '\n' + log_rule + '\n' + expire_time_rule + '\n' + new_db_rule + '\n' \
-                        + label_binary + '\n' + label_multi
+                        + label_binary + '\n' + label_multi+ '\n'
                 print(lines)
             if '[flowmldetection]' in lines:
-                lines = lines + '\n' + mode+ '\n'
+                lines = lines + '\n' + mode + '\n'
                 print(lines)
             new_content = new_content + lines
         config_content.seek(0)
