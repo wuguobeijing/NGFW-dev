@@ -27,6 +27,12 @@ class MY_FIREWALL_GUI():
         else:
             return True
 
+    def cmd_iptables_rules(self):
+        if self.check_device():
+            cmd = self.entry_1.get(0, END)
+            print(cmd)
+            self.ssh_query_ip_tables(cmd)
+
     def query_iptables_rules_filter(self):
         if self.check_device():
             rules_content = 'sudo iptables -L -n --line-number'
@@ -55,8 +61,9 @@ class MY_FIREWALL_GUI():
         if err is not None:
             messagebox.showwarning("query failed!", "try again later")
         else:
-            self.show_select_rules(out.decode().strip())
-            print(out)
+            if out is not None:
+                self.show_select_rules(out.decode().strip())
+                print(out)
 
     def show_select_rules(self, out):
         rules_list = out.split('Chain')
@@ -417,7 +424,7 @@ class MY_FIREWALL_GUI():
             image=self.button_image_17,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("button_17 clicked"),
+            command=self.cmd_iptables_rules,
             relief="flat"
         )
         self.button_17.place(
