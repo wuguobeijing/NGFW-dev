@@ -14,6 +14,7 @@ from gui.NGFW.build_firewall.gui_firewall import MY_FIREWALL_GUI
 from gui.NGFW.build_flow.gui_flow import MY_FLOW_GUI
 from gui.NGFW.build_help.gui_help import MY_HELP_GUI
 from gui.NGFW.build_log.gui_log import MY_LOG_GUI
+from gui.NGFW.build_manage.gui_manage import MY_MANAGE_GUI
 
 
 class MY_GUI():
@@ -91,7 +92,7 @@ class MY_GUI():
             image=self.button_image_3,
             borderwidth=0,
             highlightthickness=0,
-            # command=,
+            command=self.goto_manage,
             relief="flat"
         )
         self.button_3.place(
@@ -286,6 +287,13 @@ class MY_GUI():
         firewall.set_firewall_window()
         self.log.info("firewall page start" + str(time.time()))
         firewall_window.mainloop()
+
+    def goto_manage(self):
+        manage_window = Toplevel(self.init_window)
+        manage = MY_MANAGE_GUI(manage_window)
+        manage.set_manage_window()
+        self.log.info("manage_window page start" + str(time.time()))
+        manage_window.mainloop()
 
     def goto_ips_flow(self):
         # supervised learning
