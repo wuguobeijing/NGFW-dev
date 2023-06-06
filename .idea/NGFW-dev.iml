@@ -7,7 +7,6 @@
       <excludeFolder url="file://$MODULE_DIR$/src/Model/auto_gl/edge_model/binary" />
       <excludeFolder url="file://$MODULE_DIR$/src/Model/auto_gl/edge_model/multi" />
     </content>
-    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
