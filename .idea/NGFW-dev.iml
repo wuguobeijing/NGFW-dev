@@ -3,6 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/src/Model/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/src/Model/auto_gl/edge_model/binary" />
+      <excludeFolder url="file://$MODULE_DIR$/src/Model/auto_gl/edge_model/multi" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
