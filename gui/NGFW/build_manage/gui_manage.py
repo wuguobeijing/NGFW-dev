@@ -113,10 +113,10 @@ class MY_MANAGE_GUI():
                                                           match_params[3])
                                     DDoS_list.append(match_params)
                             elif content_json['module_labels'] == 'msf':
-                                match_params = [parsed_rule_params[4], parsed_rule_params[0],
-                                                parsed_rule_params[1], parsed_rule_params[3]]
+                                match_params = [parsed_rule_params[4], parsed_rule_params[1],
+                                                parsed_rule_params[0], parsed_rule_params[3]]
                                 if match_params not in msf_list:
-                                    firewall_content = "sudo iptables -A INPUT -p %s -s %s -d %s --dport %s -m comment " \
+                                    firewall_content = "sudo iptables -A INPUT -p %s -s %s -d %s --sport %s -m comment " \
                                                        "--comment \"msf\" -j DROP" \
                                                        % (match_params[0], match_params[1], match_params[2],
                                                           match_params[3])
